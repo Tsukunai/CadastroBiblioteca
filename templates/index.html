@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #216e39; /* Verde John Deere */
+            margin-bottom: 20px;
+        }
+
+        label {
+            color: #f1c116; /* Amarelo John Deere */
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 75px);
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #216e39; /* Verde John Deere */
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #205d31; /* Verde John Deere mais escuro */
+        }
+
+        #resultado {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        p {
+            margin: 8px 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SMART CONNECTED FACTORY</h1>
+        <h1>Voluntariado Monteiro Lobato</h1>
+        <label for="isbn">ISBN:</label>
+        <input type="text" id="isbn" onkeypress="pesquisarPorEnter(event)" placeholder="Digite o ISBN e pressione Enter">
+        <br>
+        <button onclick="buscarLivro()">Buscar</button>
+        <button onclick="location.href='/pesquisas'">Pesquisas</button>
+        <!-- Adicionando o elemento resultado -->
+        <div id="resultado">
+            <p id="livroNaoEncontrado" style="display: none;">Livro não encontrado</p>
+            <p id="titulo">Título: </p>
+            <p id="autorPrincipal">Autor Principal: </p>
+            <p id="autorSecundario">Autor Secundário: </p>
+            <p id="edicao">Edição: </p>
+            <p id="ano">Ano: </p>
+            <p id="editora">Editora: </p>
+        </div>
+    </div>
+
+    <script>
+        function buscarLivro() {
+            var isbn = document.getElementById("isbn").value;
+            var url = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.totalItems > 0) {
+                        var bookInfo = data.items[0].volumeInfo;
+                        var titulo = bookInfo.title;
+                        var autores = bookInfo.authors || ["Não especificado"];
+                        var edicao = bookInfo.edition || "Não especificada";
+                        var ano = bookInfo.publishedDate || "Não especificado";
+                        var editora = bookInfo.publisher || "Não especificada";
+
+                        var autorPrincipal = autores[0];
+                        var autorSecundario = autores.length > 1 ? autores.slice(1).join(", ") : "Não especificado";
+                        
+                        document.getElementById("titulo").textContent = "Título: " + titulo;
+                        document.getElementById("autorPrincipal").textContent = "Autor Principal: " + autorPrincipal;
+                        document.getElementById("autorSecundario").textContent = "Autor Secundário: " + autorSecundario;
+                        document.getElementById("edicao").textContent = "Edição: " + edicao;
+                        document.getElementById("ano").textContent = "Ano: " + ano;
+                        document.getElementById("editora").textContent = "Editora: " + editora;
+
+                        // Exibir resultados e enviar dados para o servidor
+                        document.getElementById("livroNaoEncontrado").style.display = "none";
+                        enviarDados(isbn, titulo, autorPrincipal, autorSecundario, edicao, ano, editora);
+                    } else {
+                        // Ocultar resultados e exibir mensagem de livro não encontrado
+                        document.getElementById("livroNaoEncontrado").style.display = "block";
+                        document.getElementById("titulo").textContent = "Título: ";
+                        document.getElementById("autorPrincipal").textContent = "Autor Principal: ";
+                        document.getElementById("autorSecundario").textContent = "Autor Secundário: ";
+                        document.getElementById("edicao").textContent = "Edição: ";
+                        document.getElementById("ano").textContent = "Ano: ";
+                        document.getElementById("editora").textContent = "Editora: ";
+                        
+                        // Adicionar o ISBN à base de dados com colunas vazias
+                        adicionarISBN(isbn);
+                    }
+                    
+                    // Limpar o campo ISBN independentemente de o livro ser encontrado ou não
+                    limparCampoISBN();
+                })
+                .catch(error => console.log("Erro ao buscar livro: ", error));
+        }
+
+        function enviarDados(isbn, titulo, autorPrincipal, autorSecundario, edicao, ano, editora) {
+            var formData = new FormData();
+            formData.append('isbn', isbn);
+            formData.append('titulo', titulo);
+            formData.append('autorPrincipal', autorPrincipal);
+            formData.append('autorSecundario', autorSecundario);
+            formData.append('edicao', edicao);
+            formData.append('ano', ano);
+            formData.append('editora', editora);
+
+            fetch('/inserir_pesquisa', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => console.log(data))
+            .catch(error => console.log("Erro ao inserir pesquisa: ", error));
+        }
+
+        function adicionarISBN(isbn) {
+            fetch('/adicionar_isbn', {
+                method: 'POST',
+                body: JSON.stringify({ 'isbn': isbn }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.text())
+            .then(data => console.log(data))
+            .catch(error => console.log("Erro ao adicionar ISBN: ", error));
+        }
+
+        function pesquisarPorEnter(event) {
+            if (event.key === "Enter") {
+                var isbn = document.getElementById("isbn").value;
+                buscarLivro();
+            }
+        }
+
+        function limparCampoISBN() {
+            document.getElementById('isbn').value = '';
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+

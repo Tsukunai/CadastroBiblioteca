@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f1c116; /* Amarelo John Deere */
+            color: #fff;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        tr:hover {
+            background-color: #f2f2f2;
+        }
+
+        .btn {
+            background-color: #216e39; /* Verde John Deere */
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #205d31; /* Verde John Deere mais escuro */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pesquisas Realizadas</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>ISBN</th>
+                    <th>Título</th>
+                    <th>Autor Principal</th>
+                    <th>Autor Secundário</th>
+                    <th>Edição</th>
+                    <th>Ano</th>
+                    <th>Editora</th>
+                    <th>Data e Hora</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pesquisa in pesquisas %}
+                <tr>
+                    <td>{{ pesquisa[0] }}</td>
+                    <td>{{ pesquisa[1] }}</td>
+                    <td>{{ pesquisa[2] }}</td>
+                    <td>{{ pesquisa[3] }}</td>
+                    <td>{{ pesquisa[4] }}</td>
+                    <td>{{ pesquisa[5] }}</td>
+                    <td>{{ pesquisa[6] }}</td>
+                    <td>{{ pesquisa[7] }}</td>
+                    <td>{{ pesquisa[8] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="/download_pesquisas" class="btn">Download TXT</a>
+    </div>
+</body>
+</html>
